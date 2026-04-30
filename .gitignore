@@ -20,6 +20,12 @@ dist-ssr
 .wrangler/
 .dev.vars
 
+# Ignore all .env files except .env.example
+.env
+!.env.example
+# Allow .env.local for Vercel
+!.env.local
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
