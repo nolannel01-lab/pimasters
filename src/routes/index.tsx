@@ -3,6 +3,8 @@ import { useMemo, useState, useCallback, useEffect } from "react";
 import { useWallets } from "@/lib/wallet-store";
 import { WalletCard } from "@/components/WalletCard";
 import { AddWalletDialog } from "@/components/AddWalletDialog";
+import { ScheduledPaymentsDialog } from "@/components/ScheduledPaymentsDialog";
+import { ActivityTerminal } from "@/components/ActivityTerminal";
 import { Toaster } from "@/components/ui/sonner";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -14,6 +16,7 @@ import {
   RefreshCw,
   Zap,
   ExternalLink,
+  Clock,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatPi, shortKey } from "@/lib/pi-network";
@@ -26,6 +29,13 @@ import {
   getSweepDestination,
   type SweepEvent,
 } from "@/lib/auto-sweep";
+import {
+  configurePayments,
+  startPayments,
+  subscribePayments,
+  type PaymentEvent,
+} from "@/lib/scheduled-payment";
+import { useScheduledPayments } from "@/lib/scheduled-payment-store";
 import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/")({
@@ -50,25 +60,31 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { wallets, hydrated } = useWallets();
+  const { schedules, addSchedule, updateSchedule, enableSchedule, disableSchedule } = useScheduledPayments();
   const [balances, setBalances] = useState<Record<string, { avail: number; locked: number }>>(
     {}
   );
   const [refreshing, setRefreshing] = useState(false);
   const [sweepEvents, setSweepEvents] = useState<SweepEvent[]>([]);
+  const [paymentEvents, setPaymentEvents] = useState<PaymentEvent[]>([]);
   const [sweepOn, setSweepOn] = useState(false);
 
   // Wire wallet accessor into the sweeper and start it once wallets hydrate.
   useEffect(() => {
     configureSweep(() => wallets);
-  }, [wallets]);
+    configurePayments(() => wallets, () => schedules, updateSchedule);
+  }, [wallets, schedules, updateSchedule]);
 
   useEffect(() => {
     if (!hydrated) return;
     startSweep();
+    startPayments();
     setSweepOn(isSweepEnabled());
-    const unsub = subscribeSweep((events) => setSweepEvents(events));
+    const unsubSweep = subscribeSweep((events) => setSweepEvents(events));
+    const unsubPayments = subscribePayments((events) => setPaymentEvents(events));
     return () => {
-      unsub();
+      unsubSweep();
+      unsubPayments();
     };
   }, [hydrated]);
 
@@ -147,6 +163,7 @@ function Index() {
                 Refresh all
               </Button>
             )}
+            <ScheduledPaymentsDialog />
             <AddWalletDialog />
           </div>
         </div>
@@ -175,8 +192,7 @@ function Index() {
             </Button>
           </AlertTitle>
           <AlertDescription className="text-xs">
-            Every 15s, each signer wallet auto-claims matured lockups and
-            forwards the available balance to{" "}
+            Every 0.001s, each signer wallet checks balance and sends the whole number amount (floor of balance) to{" "}
             <code className="font-mono">{shortKey(getSweepDestination())}</code>
             . Runs only while this tab is open.
             {sweepEvents.length > 0 && (
@@ -217,6 +233,55 @@ function Index() {
             )}
           </AlertDescription>
         </Alert>
+
+        {/* Scheduled payments status */}
+        {schedules.length > 0 && (
+          <Alert className="mb-6 border-blue-500/40 bg-blue-500/5">
+            <Clock className="h-4 w-4 text-blue-500" />
+            <AlertTitle>Scheduled Payments</AlertTitle>
+            <AlertDescription className="text-xs">
+              {schedules.filter(s => s.enabled).length} active schedule(s) running.
+              Failed transactions retry every 1ms until successful.
+              {paymentEvents.length > 0 && (
+                <ul className="mt-3 space-y-1 border-t border-border/40 pt-2">
+                  {paymentEvents.slice(0, 5).map((e, i) => (
+                    <li key={i} className="flex items-center gap-2">
+                      {e.kind === "success" && (
+                        <CheckCircle2 className="h-3 w-3 text-success" />
+                      )}
+                      {e.kind === "error" && (
+                        <ShieldAlert className="h-3 w-3 text-destructive" />
+                      )}
+                      {e.kind === "retry" && (
+                        <RefreshCw className="h-3 w-3 text-warning" />
+                      )}
+                      <span className="text-muted-foreground">
+                        {new Date(e.at).toLocaleTimeString()} ·{" "}
+                        <strong className="text-foreground">
+                          {wallets.find(w => w.id === e.walletId)?.label || "Unknown"}
+                        </strong>{" "}
+                        {e.kind === "success" &&
+                          `sent ${formatPi(e.amount)} π → ${shortKey(e.destination)}`}
+                        {e.kind === "error" && `error: ${e.message}`}
+                        {e.kind === "retry" && `retrying: ${e.message}`}
+                      </span>
+                      {e.hash && (
+                        <a
+                          href={`https://api.mainnet.minepi.com/transactions/${e.hash}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-0.5 text-primary hover:underline"
+                        >
+                          tx <ExternalLink className="h-2.5 w-2.5" />
+                        </a>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </AlertDescription>
+          </Alert>
+        )}
 
         {/* Hero */}
         <section className="mb-8 text-center">
@@ -285,6 +350,8 @@ function Index() {
           </p>
         </footer>
       </main>
+
+      <ActivityTerminal />
     </div>
   );
 }

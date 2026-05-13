@@ -72,10 +72,18 @@ export function WalletCard({ wallet, onBalanceUpdate }: Props) {
         parseFloat(b.available) || 0,
         parseFloat(b.totalLocked) || 0
       );
+      // Emit balance check event
+      window.dispatchEvent(new CustomEvent("pivault:balance-check", {
+        detail: {
+          walletId: wallet.id,
+          available: parseFloat(b.available) || 0,
+          locked: parseFloat(b.totalLocked) || 0,
+        }
+      }));
     } finally {
       setLoading(false);
     }
-  }, [wallet.publicKey, onBalanceUpdate]);
+  }, [wallet.publicKey, wallet.id, onBalanceUpdate]);
 
   useEffect(() => {
     refresh();
