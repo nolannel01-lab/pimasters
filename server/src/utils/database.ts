@@ -16,8 +16,6 @@ export const supabaseAdmin = serviceRoleKey
   ? createClient(supabaseUrl, serviceRoleKey)
   : supabase;
 
-export type { Database } from "./database.types.js";
-
 // Database helpers
 export async function getWalletsByUser(userId: string) {
   const { data, error } = await supabase
