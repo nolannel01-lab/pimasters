@@ -1,4 +1,4 @@
-import express, { Express, Request, Response, NextFunction } from "express";
+import express, { Express, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import walletRoutes from "../src/routes/wallets.js";
@@ -21,23 +21,19 @@ app.use(cors({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Health check
-app.get("/api/health", (req: Request, res: Response) => {
+// Health check - route will be /api/health when called through Vercel
+app.get("/health", (req: Request, res: Response) => {
   res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
-// Routes
-app.use("/api/wallets", walletRoutes);
-app.use("/api/transactions", transactionRoutes);
-app.use("/api/payments", paymentRoutes);
+// API routes - will be at /api/wallets, /api/transactions, /api/payments
+app.use("/wallets", walletRoutes);
+app.use("/transactions", transactionRoutes);
+app.use("/payments", paymentRoutes);
 
 // Error handling
 app.use(notFound);
 app.use(errorHandler);
 
-// Export for Vercel handler
+// Export for Vercel serverless function
 export default app;
-
-// Also export as a default handler for serverless
-export const handler = app;
-
