@@ -9,15 +9,15 @@ import { errorHandler, notFound } from "../src/middleware/errorHandler.js";
 dotenv.config();
 
 const app: Express = express();
-const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
 
-// Middleware
-app.use(
-  cors({
-    origin: FRONTEND_URL,
-    credentials: true,
-  })
-);
+// CORS configuration
+const FRONTEND_URL = process.env.FRONTEND_URL || "https://pivault-alpha.vercel.app";
+
+app.use(cors({
+  origin: FRONTEND_URL,
+  credentials: true,
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
