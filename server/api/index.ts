@@ -35,5 +35,9 @@ app.use("/api/payments", paymentRoutes);
 app.use(notFound);
 app.use(errorHandler);
 
-// Export for Vercel
+// Export for Vercel handler
 export default app;
+
+// Also export as a default handler for serverless
+export const handler = app;
+
