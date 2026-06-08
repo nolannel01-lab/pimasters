@@ -1,7 +1,15 @@
 {
-  "buildCommand": "node build.js",
+  "buildCommand": "npm run build && node build.js",
   "outputDirectory": "dist/client",
-  "installCommand": "npm install"
+  "installCommand": "npm install",
+  "framework": "vite",
+  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- src/ package.json vite.config.ts",
+  "env": {
+    "VITE_SUPABASE_URL": "@vite_supabase_url",
+    "VITE_SUPABASE_ANON_KEY": "@vite_supabase_anon_key",
+    "VITE_API_URL": "@vite_api_url",
+    "VITE_PI_MAINNET_URL": "@vite_pi_mainnet_url"
+  }
 }
 
 
