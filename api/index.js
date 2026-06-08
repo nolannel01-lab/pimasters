@@ -1,5 +1,9 @@
 import fs from 'fs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.join(__dirname, '..');
 
 export default function handler(req, res) {
   const url = new URL(req.url || '/', `http://${req.headers.host}`);
@@ -7,7 +11,7 @@ export default function handler(req, res) {
 
   // Handle static assets
   if (pathname.startsWith('/assets/')) {
-    const filePath = path.join(process.cwd(), 'dist/client', pathname);
+    const filePath = path.join(projectRoot, 'public', pathname);
     try {
       const data = fs.readFileSync(filePath);
       const ext = path.extname(filePath).toLowerCase();
@@ -37,7 +41,7 @@ export default function handler(req, res) {
 
   // Handle favicon
   if (pathname === '/favicon.ico') {
-    const filePath = path.join(process.cwd(), 'public/favicon.ico');
+    const filePath = path.join(projectRoot, 'public/favicon.ico');
     try {
       const data = fs.readFileSync(filePath);
       res.setHeader('Content-Type', 'image/x-icon');
@@ -52,7 +56,7 @@ export default function handler(req, res) {
 
   // Serve index.html for all other requests (SPA)
   try {
-    const indexPath = path.join(process.cwd(), 'dist/client/index.html');
+    const indexPath = path.join(projectRoot, 'public/index.html');
     const data = fs.readFileSync(indexPath);
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache');
@@ -61,3 +65,4 @@ export default function handler(req, res) {
     res.status(500).send('Internal Server Error: ' + err.message);
   }
 }
+
