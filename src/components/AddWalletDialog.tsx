@@ -80,8 +80,8 @@ export function AddWalletDialog() {
         <DialogHeader>
           <DialogTitle>Add a Pi wallet</DialogTitle>
           <DialogDescription>
-            Track multiple wallets. Choose watch-only for safety, or import a secret key
-            to enable sending.
+            Track multiple wallets. Choose watch-only for safety, or import a secret key to enable
+            sending.
           </DialogDescription>
         </DialogHeader>
 
@@ -126,8 +126,8 @@ export function AddWalletDialog() {
                 <AlertTitle>Security warning</AlertTitle>
                 <AlertDescription>
                   Your secret key gives full control of your funds. It will be stored in this
-                  browser's localStorage <strong>only</strong> and never sent to any server.
-                  Anyone with access to this device can spend your Pi.
+                  browser's localStorage <strong>only</strong> and never sent to any server. Anyone
+                  with access to this device can spend your Pi.
                 </AlertDescription>
               </Alert>
               <Label htmlFor="sk">Secret key</Label>
@@ -147,8 +147,7 @@ export function AddWalletDialog() {
                   className="mt-0.5"
                 />
                 <span>
-                  I understand the risk. I trust this device and browser to hold my secret
-                  key.
+                  I understand the risk. I trust this device and browser to hold my secret key.
                 </span>
               </label>
             </TabsContent>

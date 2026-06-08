@@ -70,16 +70,18 @@ export function WalletCard({ wallet, onBalanceUpdate }: Props) {
       onBalanceUpdate?.(
         wallet.publicKey,
         parseFloat(b.available) || 0,
-        parseFloat(b.totalLocked) || 0
+        parseFloat(b.totalLocked) || 0,
       );
       // Emit balance check event
-      window.dispatchEvent(new CustomEvent("pivault:balance-check", {
-        detail: {
-          walletId: wallet.id,
-          available: parseFloat(b.available) || 0,
-          locked: parseFloat(b.totalLocked) || 0,
-        }
-      }));
+      window.dispatchEvent(
+        new CustomEvent("pivault:balance-check", {
+          detail: {
+            walletId: wallet.id,
+            available: parseFloat(b.available) || 0,
+            locked: parseFloat(b.totalLocked) || 0,
+          },
+        }),
+      );
     } finally {
       setLoading(false);
     }
@@ -114,7 +116,7 @@ export function WalletCard({ wallet, onBalanceUpdate }: Props) {
       confirm(
         `Remove ${wallet.label}? ${
           wallet.secret ? "Its secret key will be deleted from this browser." : ""
-        }`
+        }`,
       )
     ) {
       removeWallet(wallet.id);
@@ -148,9 +150,7 @@ export function WalletCard({ wallet, onBalanceUpdate }: Props) {
               </button>
               {wallet.secret && (
                 <div className="mt-1 flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-wider text-warning">
-                    Secret
-                  </span>
+                  <span className="text-[10px] uppercase tracking-wider text-warning">Secret</span>
                   <code className="rounded bg-background/60 px-1.5 py-0.5 font-mono text-xs text-foreground/80">
                     {showSecret ? wallet.secret : "S••••••••••••••••••••••••••••"}
                   </code>
@@ -159,11 +159,7 @@ export function WalletCard({ wallet, onBalanceUpdate }: Props) {
                     className="text-muted-foreground transition-colors hover:text-foreground"
                     title={showSecret ? "Hide secret" : "Show secret"}
                   >
-                    {showSecret ? (
-                      <EyeOff className="h-3 w-3" />
-                    ) : (
-                      <Eye className="h-3 w-3" />
-                    )}
+                    {showSecret ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
                   </button>
                   <button
                     onClick={copySecret}
@@ -237,10 +233,7 @@ export function WalletCard({ wallet, onBalanceUpdate }: Props) {
                 {balance.locked.slice(0, 6).map((l) => {
                   const u = formatUnlock(l.unlockDate);
                   return (
-                    <li
-                      key={l.id}
-                      className="flex items-center justify-between gap-2 text-xs"
-                    >
+                    <li key={l.id} className="flex items-center justify-between gap-2 text-xs">
                       <span className="font-mono tabular-nums text-foreground/90">
                         {formatPi(l.amount)} π
                       </span>

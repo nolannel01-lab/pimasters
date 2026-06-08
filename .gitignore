@@ -26,6 +26,10 @@ dist-ssr
 # Allow .env.local for Vercel
 !.env.local
 
+# WhatsApp Bot Authentication (sensitive data)
+auth_info_baileys/
+.env.whatsapp
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -21,29 +21,29 @@ The database consists of two main tables:
 
 #### 1. `wallets` Table
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `user_id` | TEXT | Anonymous user identifier |
-| `label` | TEXT | Wallet label/name |
-| `public_key` | TEXT | Wallet public key (unique) |
-| `secret_encrypted` | TEXT | Encrypted secret key (Base64) |
-| `watch_only` | BOOLEAN | Whether wallet is watch-only |
-| `created_at` | TIMESTAMP | Creation timestamp |
-| `updated_at` | TIMESTAMP | Last update timestamp |
+| Column             | Type      | Description                   |
+| ------------------ | --------- | ----------------------------- |
+| `id`               | UUID      | Primary key                   |
+| `user_id`          | TEXT      | Anonymous user identifier     |
+| `label`            | TEXT      | Wallet label/name             |
+| `public_key`       | TEXT      | Wallet public key (unique)    |
+| `secret_encrypted` | TEXT      | Encrypted secret key (Base64) |
+| `watch_only`       | BOOLEAN   | Whether wallet is watch-only  |
+| `created_at`       | TIMESTAMP | Creation timestamp            |
+| `updated_at`       | TIMESTAMP | Last update timestamp         |
 
 #### 2. `transactions` Table
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | UUID | Primary key |
-| `wallet_id` | UUID | Foreign key to wallets |
-| `tx_hash` | TEXT | Transaction hash |
-| `amount` | TEXT | Transaction amount |
-| `type` | TEXT | incoming/outgoing |
-| `status` | TEXT | pending/confirmed/failed |
-| `counterparty` | TEXT | Other party address |
-| `created_at` | TIMESTAMP | Creation timestamp |
+| Column         | Type      | Description              |
+| -------------- | --------- | ------------------------ |
+| `id`           | UUID      | Primary key              |
+| `wallet_id`    | UUID      | Foreign key to wallets   |
+| `tx_hash`      | TEXT      | Transaction hash         |
+| `amount`       | TEXT      | Transaction amount       |
+| `type`         | TEXT      | incoming/outgoing        |
+| `status`       | TEXT      | pending/confirmed/failed |
+| `counterparty` | TEXT      | Other party address      |
+| `created_at`   | TIMESTAMP | Creation timestamp       |
 
 ## Setting Up the Database
 

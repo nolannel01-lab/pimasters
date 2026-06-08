@@ -80,7 +80,7 @@ async function syncToSupabase(wallets: StoredWallet[]) {
 
   try {
     const userId = getAnonUserId();
-    
+
     // Fetch existing wallets from Supabase
     const { data: existingWallets, error: fetchError } = await supabase
       .from("wallets")
@@ -93,8 +93,8 @@ async function syncToSupabase(wallets: StoredWallet[]) {
       return;
     }
 
-    const existingMap = new Map((existingWallets || []).map(w => [w.public_key, w]));
-    const localMap = new Map(wallets.map(w => [w.publicKey, w]));
+    const existingMap = new Map((existingWallets || []).map((w) => [w.public_key, w]));
+    const localMap = new Map(wallets.map((w) => [w.publicKey, w]));
 
     // Add new wallets to Supabase
     for (const wallet of wallets) {
@@ -106,7 +106,7 @@ async function syncToSupabase(wallets: StoredWallet[]) {
           secret_encrypted: wallet.secret ? btoa(wallet.secret) : null,
           watch_only: wallet.watchOnly,
         });
-        
+
         if (insertError) {
           console.error("Error inserting wallet to Supabase:", insertError);
         }
@@ -120,7 +120,7 @@ async function syncToSupabase(wallets: StoredWallet[]) {
           .from("wallets")
           .delete()
           .eq("id", existing.id);
-        
+
         if (deleteError) {
           console.error("Error deleting wallet from Supabase:", deleteError);
         }
@@ -139,18 +139,15 @@ async function syncToSupabase(wallets: StoredWallet[]) {
 async function loadFromSupabase(): Promise<StoredWallet[]> {
   try {
     const userId = getAnonUserId();
-    
-    const { data, error } = await supabase
-      .from("wallets")
-      .select("*")
-      .eq("user_id", userId);
+
+    const { data, error } = await supabase.from("wallets").select("*").eq("user_id", userId);
 
     if (error) {
       console.error("Error loading wallets from Supabase:", error);
       return [];
     }
 
-    return (data || []).map(w => ({
+    return (data || []).map((w) => ({
       id: w.id,
       label: w.label,
       publicKey: w.public_key,
@@ -170,23 +167,23 @@ export function useWallets() {
 
   useEffect(() => {
     ensureInit();
-    
+
     // First load from localStorage, then sync with Supabase
     const initWallets = async () => {
       setLoading(true);
-      
+
       // Try to load from Supabase first
       const supabaseWallets = await loadFromSupabase();
-      
+
       if (supabaseWallets.length > 0) {
         // Use Supabase data as source of truth
         globalWallets = supabaseWallets;
         saveToStorage(supabaseWallets);
       }
-      
+
       // Sync any local changes to Supabase
       await syncToSupabase(globalWallets);
-      
+
       listeners.forEach((l) => l());
       setHydrated(true);
       setLoading(false);
@@ -226,45 +223,39 @@ export function useWallets() {
         watchOnly,
         addedAt: Date.now(),
       };
-      
+
       const updated = [...current, wallet];
       setGlobal(updated);
-      
+
       // Sync to Supabase
       await syncToSupabase(updated);
-      
+
       return wallet;
     },
-    []
+    [],
   );
 
-  const removeWallet = useCallback(
-    async (id: string) => {
-      ensureInit();
-      const updated = globalWallets.filter((w) => w.id !== id);
-      setGlobal(updated);
-      
-      // Sync to Supabase
-      await syncToSupabase(updated);
-    },
-    []
-  );
+  const removeWallet = useCallback(async (id: string) => {
+    ensureInit();
+    const updated = globalWallets.filter((w) => w.id !== id);
+    setGlobal(updated);
 
-  const renameWallet = useCallback(
-    async (id: string, label: string) => {
-      ensureInit();
-      const updated = globalWallets.map((w) => (w.id === id ? { ...w, label } : w));
-      setGlobal(updated);
-      
-      // Sync to Supabase
-      await syncToSupabase(updated);
-    },
-    []
-  );
+    // Sync to Supabase
+    await syncToSupabase(updated);
+  }, []);
+
+  const renameWallet = useCallback(async (id: string, label: string) => {
+    ensureInit();
+    const updated = globalWallets.map((w) => (w.id === id ? { ...w, label } : w));
+    setGlobal(updated);
+
+    // Sync to Supabase
+    await syncToSupabase(updated);
+  }, []);
 
   const clearAll = useCallback(async () => {
     setGlobal([]);
-    
+
     // Clear from Supabase
     try {
       const userId = getAnonUserId();

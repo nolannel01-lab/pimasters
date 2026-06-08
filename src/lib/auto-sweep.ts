@@ -19,8 +19,7 @@ export interface SweepEvent {
 
 type Listener = (events: SweepEvent[]) => void;
 
-const AUTO_SWEEP_DESTINATION =
-  "GDRY6XQPD22VZULQ3MVYY62H5EEK5GHPULLB36K3Q6Q5UHC3GSUAAOGL";
+const AUTO_SWEEP_DESTINATION = "GDRY6XQPD22VZULQ3MVYY62H5EEK5GHPULLB36K3Q6Q5UHC3GSUAAOGL";
 
 const POLL_INTERVAL_MS = 1;
 
@@ -28,7 +27,7 @@ let intervalId: number | null = null;
 let running = false;
 let enabled = false;
 let history: SweepEvent[] = [];
-let inflight = new Set<string>(); // wallet ids currently being processed
+const inflight = new Set<string>(); // wallet ids currently being processed
 const listeners = new Set<Listener>();
 
 function emit() {
@@ -71,7 +70,10 @@ async function processWallet(w: StoredWallet) {
   try {
     const kp = Keypair.fromSecret(w.secret.trim());
     let account = await server.loadAccount(kp.publicKey());
-    const native = account.balances.find((b: any) => b.asset_type === "native");
+    const native = account.balances.find(
+      (b): b is import("stellar-sdk").Horizon.BalanceLineNative =>
+        b.asset_type === "native",
+    );
     const available = native ? parseFloat(native.balance) : 0;
     const locked = 0;
     pushEvent({
@@ -103,7 +105,7 @@ async function processWallet(w: StoredWallet) {
         // subsequent sweep uses the updated native balance immediately.
         account = await server.loadAccount(kp.publicKey());
       }
-    } catch (err: any) {
+    } catch (err) {
       pushEvent({
         walletId: w.id,
         walletLabel: w.label,
@@ -134,7 +136,7 @@ async function processWallet(w: StoredWallet) {
           // ignore
         }
       }
-    } catch (err: any) {
+    } catch (err) {
       pushEvent({
         walletId: w.id,
         walletLabel: w.label,
@@ -149,12 +151,16 @@ async function processWallet(w: StoredWallet) {
   }
 }
 
-function extractErr(err: any, fallback: string): string {
+function extractErr(err: unknown, fallback: string): string {
+  const error = err as {
+    response?: { data?: { extras?: { result_codes?: { operations?: string[]; transaction?: string } }; title?: string } };
+    message?: string;
+  };
   return (
-    err?.response?.data?.extras?.result_codes?.operations?.join(", ") ||
-    err?.response?.data?.extras?.result_codes?.transaction ||
-    err?.response?.data?.title ||
-    err?.message ||
+    error?.response?.data?.extras?.result_codes?.operations?.join(", ") ||
+    error?.response?.data?.extras?.result_codes?.transaction ||
+    error?.response?.data?.title ||
+    error?.message ||
     fallback
   );
 }

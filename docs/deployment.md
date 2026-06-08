@@ -49,10 +49,10 @@ Once deployed, Vercel will provide a URL like `pivault.vercel.app`.
 
 ## Environment Variables Reference
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `VITE_SUPABASE_URL` | Supabase project URL | Yes |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes |
+| Variable                 | Description            | Required |
+| ------------------------ | ---------------------- | -------- |
+| `VITE_SUPABASE_URL`      | Supabase project URL   | Yes      |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anonymous key | Yes      |
 
 ## Cloudflare Pages (Alternative)
 

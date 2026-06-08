@@ -10,7 +10,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Clock, Plus, Play, Pause, Trash2 } from "lucide-react";
 import { useScheduledPayments } from "@/lib/scheduled-payment-store";
@@ -19,7 +25,8 @@ import { getSweepDestination } from "@/lib/auto-sweep";
 
 export function ScheduledPaymentsDialog() {
   const { wallets } = useWallets();
-  const { schedules, addSchedule, enableSchedule, disableSchedule, removeSchedule } = useScheduledPayments();
+  const { schedules, addSchedule, enableSchedule, disableSchedule, removeSchedule } =
+    useScheduledPayments();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [startTime, setStartTime] = useState("");
@@ -33,11 +40,16 @@ export function ScheduledPaymentsDialog() {
     const num = parseFloat(value);
     if (isNaN(num)) return 0;
     switch (unit) {
-      case "milliseconds": return num;
-      case "seconds": return num * 1000;
-      case "minutes": return num * 60 * 1000;
-      case "hours": return num * 60 * 60 * 1000;
-      default: return 0;
+      case "milliseconds":
+        return num;
+      case "seconds":
+        return num * 1000;
+      case "minutes":
+        return num * 60 * 1000;
+      case "hours":
+        return num * 60 * 60 * 1000;
+      default:
+        return 0;
     }
   };
 
@@ -49,7 +61,7 @@ export function ScheduledPaymentsDialog() {
     // Add seconds and milliseconds to the timestamp
     const sec = parseInt(seconds) || 0;
     const ms = parseInt(milliseconds) || 0;
-    const startTimestamp = baseTimestamp + (sec * 1000) + ms;
+    const startTimestamp = baseTimestamp + sec * 1000 + ms;
     if (startTimestamp <= Date.now()) return;
 
     let intervalMs = 0;
@@ -105,8 +117,8 @@ export function ScheduledPaymentsDialog() {
         <DialogHeader>
           <DialogTitle>Scheduled Payments</DialogTitle>
           <DialogDescription>
-            Schedule automatic payments to {getSweepDestination().slice(0, 8)}... at specified intervals.
-            Failed transactions retry every 1ms until successful.
+            Schedule automatic payments to {getSweepDestination().slice(0, 8)}... at specified
+            intervals. Failed transactions retry every 1ms until successful.
           </DialogDescription>
         </DialogHeader>
 
@@ -122,11 +134,13 @@ export function ScheduledPaymentsDialog() {
                     <SelectValue placeholder="Select wallet" />
                   </SelectTrigger>
                   <SelectContent>
-                    {wallets.filter(w => !w.watchOnly && w.secret).map(wallet => (
-                      <SelectItem key={wallet.id} value={wallet.id}>
-                        {wallet.label} ({wallet.publicKey.slice(0, 8)}...)
-                      </SelectItem>
-                    ))}
+                    {wallets
+                      .filter((w) => !w.watchOnly && w.secret)
+                      .map((wallet) => (
+                        <SelectItem key={wallet.id} value={wallet.id}>
+                          {wallet.label} ({wallet.publicKey.slice(0, 8)}...)
+                        </SelectItem>
+                      ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -174,7 +188,9 @@ export function ScheduledPaymentsDialog() {
                     className="w-16 text-center"
                   />
                 </div>
-                <p className="mt-1 text-xs text-muted-foreground">Format: seconds (0-59) + milliseconds (0-999)</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Format: seconds (0-59) + milliseconds (0-999)
+                </p>
               </div>
 
               <div className="flex items-center space-x-2">
@@ -195,11 +211,14 @@ export function ScheduledPaymentsDialog() {
                       type="number"
                       step="0.001"
                       value={interval.value}
-                      onChange={(e) => setInterval(prev => ({ ...prev, value: e.target.value }))}
+                      onChange={(e) => setInterval((prev) => ({ ...prev, value: e.target.value }))}
                       placeholder="1"
                       className="flex-1"
                     />
-                    <Select value={interval.unit} onValueChange={(unit) => setInterval(prev => ({ ...prev, unit }))}>
+                    <Select
+                      value={interval.unit}
+                      onValueChange={(unit) => setInterval((prev) => ({ ...prev, unit }))}
+                    >
                       <SelectTrigger className="w-32">
                         <SelectValue />
                       </SelectTrigger>
@@ -214,7 +233,12 @@ export function ScheduledPaymentsDialog() {
                 </div>
               )}
 
-              <Button onClick={handleAdd} disabled={!amount || !startTime || !selectedWallet || (isRecurring && !interval.value)}>
+              <Button
+                onClick={handleAdd}
+                disabled={
+                  !amount || !startTime || !selectedWallet || (isRecurring && !interval.value)
+                }
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Schedule
               </Button>
@@ -227,24 +251,36 @@ export function ScheduledPaymentsDialog() {
             {schedules.length === 0 ? (
               <p className="text-sm text-muted-foreground">No scheduled payments yet.</p>
             ) : (
-              schedules.map(schedule => {
-                const wallet = wallets.find(w => w.id === schedule.walletId);
+              schedules.map((schedule) => {
+                const wallet = wallets.find((w) => w.id === schedule.walletId);
                 return (
-                  <div key={schedule.id} className="flex items-center justify-between rounded-lg border p-3">
+                  <div
+                    key={schedule.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
                     <div className="flex items-center gap-3">
                       <Badge variant={schedule.enabled ? "default" : "secondary"}>
-                        {schedule.completed ? "Completed" : schedule.enabled ? "Active" : "Inactive"}
+                        {schedule.completed
+                          ? "Completed"
+                          : schedule.enabled
+                            ? "Active"
+                            : "Inactive"}
                       </Badge>
                       <div>
                         <p className="text-sm font-medium">
                           {wallet?.label || "Unknown"} → {schedule.amount} π
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          {schedule.isRecurring ? `Every ${formatInterval(schedule.intervalMs)}` : "One-time"}
-                          {schedule.enabled && !schedule.completed && ` · Next: ${getCountdown(schedule.nextRun)}`}
+                          {schedule.isRecurring
+                            ? `Every ${formatInterval(schedule.intervalMs)}`
+                            : "One-time"}
+                          {schedule.enabled &&
+                            !schedule.completed &&
+                            ` · Next: ${getCountdown(schedule.nextRun)}`}
                         </p>
                         <p className="text-xs text-muted-foreground">
-                          Start: {new Date(schedule.startTime).toLocaleString()} ({schedule.startTime % 1000}ms)
+                          Start: {new Date(schedule.startTime).toLocaleString()} (
+                          {schedule.startTime % 1000}ms)
                         </p>
                         {schedule.lastError && (
                           <p className="text-xs text-destructive">{schedule.lastError}</p>
@@ -256,9 +292,17 @@ export function ScheduledPaymentsDialog() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => schedule.enabled ? disableSchedule(schedule.id) : enableSchedule(schedule.id)}
+                          onClick={() =>
+                            schedule.enabled
+                              ? disableSchedule(schedule.id)
+                              : enableSchedule(schedule.id)
+                          }
                         >
-                          {schedule.enabled ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+                          {schedule.enabled ? (
+                            <Pause className="h-3 w-3" />
+                          ) : (
+                            <Play className="h-3 w-3" />
+                          )}
                         </Button>
                       )}
                       <Button

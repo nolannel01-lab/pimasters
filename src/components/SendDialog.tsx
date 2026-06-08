@@ -105,9 +105,7 @@ export function SendDialog({ wallet, available, open, onOpenChange, onSent }: Pr
           <div className="space-y-4 py-4">
             <Alert>
               <AlertTitle>Transaction submitted</AlertTitle>
-              <AlertDescription className="break-all font-mono text-xs">
-                {hash}
-              </AlertDescription>
+              <AlertDescription className="break-all font-mono text-xs">{hash}</AlertDescription>
             </Alert>
             <a
               href={`https://api.mainnet.minepi.com/transactions/${hash}`}
@@ -124,8 +122,7 @@ export function SendDialog({ wallet, available, open, onOpenChange, onSent }: Pr
               <ShieldAlert className="h-4 w-4" />
               <AlertTitle>Irreversible action</AlertTitle>
               <AlertDescription>
-                Pi blockchain transactions cannot be reversed. Double-check the destination
-                address.
+                Pi blockchain transactions cannot be reversed. Double-check the destination address.
               </AlertDescription>
             </Alert>
 

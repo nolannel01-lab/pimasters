@@ -20,7 +20,7 @@ export function ActivityTerminal() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setCountdownTrigger(prev => prev + 1);
+      setCountdownTrigger((prev) => prev + 1);
     }, 1000);
     return () => clearInterval(interval);
   }, []);
@@ -28,13 +28,13 @@ export function ActivityTerminal() {
   useEffect(() => {
     const handleSweepEvent = (event: Event) => {
       const sweepEvent = (event as CustomEvent).detail as SweepEvent;
-      setEvents(prev => [...prev, sweepEvent].slice(-100));
+      setEvents((prev) => [...prev, sweepEvent].slice(-100));
       setIsOpen(true);
     };
 
     const handlePaymentEvent = (event: Event) => {
       const paymentEvent = (event as CustomEvent).detail as PaymentEvent;
-      setEvents(prev => [...prev, paymentEvent].slice(-100));
+      setEvents((prev) => [...prev, paymentEvent].slice(-100));
       setIsOpen(true);
     };
 
@@ -55,14 +55,14 @@ export function ActivityTerminal() {
 
   const formatEvent = (event: ActivityEvent) => {
     const time = new Date(event.at).toLocaleTimeString();
-    const wallet = wallets.find(w => w.id === event.walletId);
+    const wallet = wallets.find((w) => w.id === event.walletId);
 
     if (event.kind === "check") {
       return {
         time,
         icon: "📊",
         message: `${event.walletLabel}: Balance check - Available: ${formatPi(event.available || "0")}π, Locked: ${formatPi(event.locked || "0")}π, Total: ${formatPi(event.total || "0")}π`,
-        type: "check"
+        type: "check",
       };
     }
 
@@ -72,7 +72,7 @@ export function ActivityTerminal() {
         time,
         icon: event.kind === "success" ? "✅" : event.kind === "error" ? "❌" : "🔄",
         message: `${wallet?.label || "Unknown"}: ${event.kind === "success" ? "Payment sent" : event.kind === "error" ? "Payment failed" : "Retrying payment"} - ${formatPi(event.amount)}π to ${shortKey(event.destination)}`,
-        type: event.kind
+        type: event.kind,
       };
     }
 
@@ -81,7 +81,7 @@ export function ActivityTerminal() {
       time,
       icon: event.kind === "claim" ? "🔓" : event.kind === "send" ? "🚀" : "⚠️",
       message: `${event.walletLabel}: ${event.kind === "claim" ? `Claimed ${event.count} lockup${event.count! > 1 ? "s" : ""}` : event.kind === "send" ? `Auto-sweep sent ${formatPi(event.amount || "0")}π` : `Error: ${event.message}`}`,
-      type: event.kind
+      type: event.kind,
     };
   };
 
@@ -97,18 +97,14 @@ export function ActivityTerminal() {
   const recentEvents = events.slice(-100); // Keep last 100 events
 
   const upcomingSchedules = schedules
-    .filter(s => s.enabled && !s.completed)
+    .filter((s) => s.enabled && !s.completed)
     .sort((a, b) => a.nextRun - b.nextRun)
     .slice(0, 5);
 
   if (!isOpen) {
     return (
       <div className="fixed bottom-4 right-4 z-50">
-        <Button
-          onClick={() => setIsOpen(true)}
-          className="rounded-full w-12 h-12 p-0"
-          size="sm"
-        >
+        <Button onClick={() => setIsOpen(true)} className="rounded-full w-12 h-12 p-0" size="sm">
           <Terminal className="h-5 w-5" />
         </Button>
       </div>
@@ -123,11 +119,7 @@ export function ActivityTerminal() {
           <span className="font-medium">Activity Terminal</span>
           <Badge variant="secondary">{recentEvents.length} events</Badge>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsOpen(false)}
-        >
+        <Button variant="ghost" size="sm" onClick={() => setIsOpen(false)}>
           <X className="h-4 w-4" />
         </Button>
       </div>
@@ -144,12 +136,17 @@ export function ActivityTerminal() {
                   <div key={i} className="flex items-start gap-2">
                     <span className="text-muted-foreground min-w-[60px]">{formatted.time}</span>
                     <span>{formatted.icon}</span>
-                    <span className={`flex-1 ${
-                      formatted.type === "error" ? "text-destructive" :
-                      formatted.type === "success" ? "text-green-600" :
-                      formatted.type === "check" ? "text-blue-600" :
-                      "text-foreground"
-                    }`}>
+                    <span
+                      className={`flex-1 ${
+                        formatted.type === "error"
+                          ? "text-destructive"
+                          : formatted.type === "success"
+                            ? "text-green-600"
+                            : formatted.type === "check"
+                              ? "text-blue-600"
+                              : "text-foreground"
+                      }`}
+                    >
                       {formatted.message}
                     </span>
                   </div>
@@ -164,12 +161,14 @@ export function ActivityTerminal() {
             {upcomingSchedules.length === 0 ? (
               <div className="text-muted-foreground text-xs">No upcoming schedules</div>
             ) : (
-              upcomingSchedules.map(schedule => {
-                const wallet = wallets.find(w => w.id === schedule.walletId);
+              upcomingSchedules.map((schedule) => {
+                const wallet = wallets.find((w) => w.id === schedule.walletId);
                 return (
                   <div key={schedule.id} className="text-xs border rounded p-2">
                     <div className="font-medium">{wallet?.label || "Unknown"}</div>
-                    <div>{schedule.amount} π → {shortKey(schedule.destination)}</div>
+                    <div>
+                      {schedule.amount} π → {shortKey(schedule.destination)}
+                    </div>
                     <div className="text-primary font-bold">{getCountdown(schedule.nextRun)}</div>
                     <div className="text-muted-foreground">
                       {schedule.isRecurring ? "Recurring" : "One-time"}

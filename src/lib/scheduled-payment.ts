@@ -18,7 +18,6 @@ type Listener = (events: PaymentEvent[]) => void;
 
 let intervalId: number | null = null;
 let running = false;
-let aborted = false;
 let history: PaymentEvent[] = [];
 const listeners = new Set<Listener>();
 
@@ -49,7 +48,7 @@ let updateSchedule: (id: string, updates: Partial<ScheduledPayment>) => void = (
 export function configurePayments(
   walletsAccessor: () => StoredWallet[],
   schedulesAccessor: () => ScheduledPayment[],
-  updateAccessor: (id: string, updates: Partial<ScheduledPayment>) => void
+  updateAccessor: (id: string, updates: Partial<ScheduledPayment>) => void,
 ) {
   getWallets = walletsAccessor;
   getSchedules = schedulesAccessor;
@@ -68,7 +67,10 @@ async function processSchedule(schedule: ScheduledPayment) {
   inflight.add(schedule.id);
   try {
     const account = await loadAccountForWallet(wallet.secret);
-    const native = account.balances.find((b: any) => b.asset_type === "native");
+    const native = account.balances.find(
+      (b): b is import("stellar-sdk").Horizon.BalanceLineNative =>
+        b.asset_type === "native",
+    );
     const balance = native ? parseFloat(native.balance) : 0;
     const required = parseFloat(schedule.amount) + 0.01;
     if (balance < required) {
@@ -92,7 +94,13 @@ async function processSchedule(schedule: ScheduledPayment) {
       });
       return;
     }
-    const result = await sendPayment(wallet.secret, schedule.destination, schedule.amount, undefined, account);
+    const result = await sendPayment(
+      wallet.secret,
+      schedule.destination,
+      schedule.amount,
+      undefined,
+      account,
+    );
     pushEvent({
       scheduleId: schedule.id,
       walletId: schedule.walletId,
@@ -121,8 +129,8 @@ async function processSchedule(schedule: ScheduledPayment) {
         retrying: false,
       });
     }
-  } catch (err: any) {
-    const message = err?.message || "Payment failed";
+  } catch (err) {
+    const message = (err as Error)?.message || "Payment failed";
     pushEvent({
       scheduleId: schedule.id,
       walletId: schedule.walletId,
@@ -155,7 +163,7 @@ async function tick() {
   running = true;
   try {
     const now = Date.now();
-    const dueSchedules = getSchedules().filter(s => s.enabled && s.nextRun <= now);
+    const dueSchedules = getSchedules().filter((s) => s.enabled && s.nextRun <= now);
     await Promise.all(dueSchedules.map(processSchedule));
   } finally {
     running = false;

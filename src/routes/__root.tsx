@@ -30,17 +30,37 @@ export const Route = createRootRoute({
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "Lovable App" },
-      { name: "description", content: "Pi Wallet Explorer checks Pi coin balances, displays available and locked funds, and facilitates real-time blockchain transactions." },
+      {
+        name: "description",
+        content:
+          "Pi Wallet Explorer checks Pi coin balances, displays available and locked funds, and facilitates real-time blockchain transactions.",
+      },
       { name: "author", content: "Lovable" },
       { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Pi Wallet Explorer checks Pi coin balances, displays available and locked funds, and facilitates real-time blockchain transactions." },
+      {
+        property: "og:description",
+        content:
+          "Pi Wallet Explorer checks Pi coin balances, displays available and locked funds, and facilitates real-time blockchain transactions.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "Lovable App" },
-      { name: "twitter:description", content: "Pi Wallet Explorer checks Pi coin balances, displays available and locked funds, and facilitates real-time blockchain transactions." },
-      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/pjX3L8eTAxXujlemf578KTuGewg1/social-images/social-1777521867067-pinnacle_logo.webp" },
-      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/pjX3L8eTAxXujlemf578KTuGewg1/social-images/social-1777521867067-pinnacle_logo.webp" },
+      {
+        name: "twitter:description",
+        content:
+          "Pi Wallet Explorer checks Pi coin balances, displays available and locked funds, and facilitates real-time blockchain transactions.",
+      },
+      {
+        property: "og:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/pjX3L8eTAxXujlemf578KTuGewg1/social-images/social-1777521867067-pinnacle_logo.webp",
+      },
+      {
+        name: "twitter:image",
+        content:
+          "https://storage.googleapis.com/gpt-engineer-file-uploads/pjX3L8eTAxXujlemf578KTuGewg1/social-images/social-1777521867067-pinnacle_logo.webp",
+      },
     ],
     links: [
       {

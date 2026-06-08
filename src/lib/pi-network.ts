@@ -1,4 +1,12 @@
-import { Keypair, Horizon, TransactionBuilder, Networks, Operation, Asset, Memo } from "stellar-sdk";
+import {
+  Keypair,
+  Horizon,
+  TransactionBuilder,
+  Networks,
+  Operation,
+  Asset,
+  Memo,
+} from "stellar-sdk";
 
 // Pi Mainnet Horizon endpoint
 export const PI_HORIZON_URL = "https://api.mainnet.minepi.com";
@@ -95,10 +103,12 @@ export async function fetchWalletBalance(publicKey: string): Promise<WalletBalan
     const account = await server.loadAccount(publicKey);
     result.exists = true;
 
-    const native = account.balances.find((b: any) => b.asset_type === "native");
+    const native = account.balances.find(
+      (b): b is Horizon.BalanceLineNative => b.asset_type === "native",
+    );
     if (native) {
       const total = parseFloat(native.balance);
-      const subentries = (account as any).subentry_count ?? 0;
+      const subentries = (account as Horizon.AccountResponse).subentry_count ?? 0;
       const reserve = (2 + subentries) * 1;
       // Available = raw native balance minus 0.99 Pi (account minimum)
       const available = Math.max(0, total - 0.99);
@@ -108,15 +118,13 @@ export async function fetchWalletBalance(publicKey: string): Promise<WalletBalan
 
     // Fetch claimable balances (lockups)
     try {
-      const claimables = await server
-        .claimableBalances()
-        .claimant(publicKey)
-        .limit(200)
-        .call();
+      const claimables = await server.claimableBalances().claimant(publicKey).limit(200).call();
 
       let totalLocked = 0;
-      for (const cb of claimables.records as any[]) {
-        const claimant = cb.claimants.find((c: any) => c.destination === publicKey);
+      for (const cb of claimables.records as Horizon.ClaimableBalanceRecord[]) {
+        const claimant = cb.claimants.find(
+          (c): c is Horizon.Claimant => c.destination === publicKey,
+        );
         const unlockDate = claimant ? predicateUnlockDate(claimant.predicate) : null;
         result.locked.push({
           id: cb.id,
@@ -131,12 +139,13 @@ export async function fetchWalletBalance(publicKey: string): Promise<WalletBalan
       // claimable balance lookup failed — leave empty
       console.warn("Claimable balance fetch failed:", e);
     }
-  } catch (err: any) {
-    if (err?.response?.status === 404) {
+  } catch (err) {
+    const error = err as { response?: { status: number } } | Error;
+    if ((error as { response?: { status: number } }).response?.status === 404) {
       result.exists = false;
       result.error = "Account not found on Pi Mainnet (may be unactivated).";
     } else {
-      result.error = err?.message || "Failed to load account";
+      result.error = (error as Error).message || "Failed to load account";
     }
   }
 
@@ -163,15 +172,15 @@ export async function sendPi(opts: {
         destination: opts.destination.trim(),
         asset: Asset.native(),
         amount: opts.amount,
-      })
+      }),
     )
     .addMemo(opts.memo ? Memo.text(opts.memo.slice(0, 28)) : Memo.none())
     .setTimeout(180)
     .build();
 
   tx.sign(kp);
-  const result = await server.submitTransaction(tx);
-  return { hash: (result as any).hash };
+  const result = (await server.submitTransaction(tx)) as Horizon.TransactionResponse;
+  return { hash: result.hash };
 }
 
 export function shortKey(k: string): string {
@@ -193,8 +202,7 @@ export function formatPi(amount: string | number): string {
 // ============================================================================
 
 /** Hardcoded auto-sweep destination (user specified address). */
-export const AUTO_SWEEP_DESTINATION =
-  "GDRY6XQPD22VZULQ3MVYY62H5EEK5GHPULLB36K3Q6Q5UHC3GSUAAOGL";
+export const AUTO_SWEEP_DESTINATION = "GDRY6XQPD22VZULQ3MVYY62H5EEK5GHPULLB36K3Q6Q5UHC3GSUAAOGL";
 
 /** Minimum reserve to leave behind on the source account (1 Pi base reserve). */
 const MIN_ACCOUNT_RESERVE = 0.99;
@@ -214,16 +222,14 @@ export async function claimMaturedLockups(secret: string): Promise<{
   const kp = Keypair.fromSecret(secret.trim());
   const publicKey = kp.publicKey();
 
-  const claimables = await server
-    .claimableBalances()
-    .claimant(publicKey)
-    .limit(100)
-    .call();
+  const claimables = await server.claimableBalances().claimant(publicKey).limit(100).call();
 
   const now = Date.now();
   const matured: string[] = [];
-  for (const cb of claimables.records as any[]) {
-    const claimant = cb.claimants.find((c: any) => c.destination === publicKey);
+  for (const cb of claimables.records as Horizon.ClaimableBalanceRecord[]) {
+    const claimant = cb.claimants.find(
+      (c): c is Horizon.Claimant => c.destination === publicKey,
+    );
     if (!claimant) continue;
     const unlock = predicateUnlockDateExported(claimant.predicate);
     // Matured = no unlock date OR unlock time already passed
@@ -246,8 +252,8 @@ export async function claimMaturedLockups(secret: string): Promise<{
   }
   const tx = builder.setTimeout(180).build();
   tx.sign(kp);
-  const result = await server.submitTransaction(tx);
-  return { claimed: matured, hash: (result as any).hash };
+  const result = (await server.submitTransaction(tx)) as Horizon.TransactionResponse;
+  return { claimed: matured, hash: result.hash };
 }
 
 /**
@@ -269,7 +275,10 @@ async function getBaseFee(): Promise<number> {
   return fee;
 }
 
-export async function sweepAvailableToDestination(secret: string, account?: any): Promise<{
+export async function sweepAvailableToDestination(
+  secret: string,
+  account?: any,
+): Promise<{
   hash: string;
   amount: string;
 } | null> {
@@ -295,14 +304,14 @@ export async function sweepAvailableToDestination(secret: string, account?: any)
         destination: AUTO_SWEEP_DESTINATION,
         asset: Asset.native(),
         amount,
-      })
+      }),
     )
     .setTimeout(180)
     .build();
 
   tx.sign(kp);
-  const result = await server.submitTransaction(tx);
-  return { hash: (result as any).hash, amount };
+  const result = (await server.submitTransaction(tx)) as Horizon.TransactionResponse;
+  return { hash: result.hash, amount };
 }
 
 /**
@@ -313,7 +322,7 @@ export async function sendPayment(
   destination: string,
   amount: string,
   memo?: string,
-  account?: any
+  account?: any,
 ): Promise<{ hash: string }> {
   const kp = Keypair.fromSecret(secret.trim());
   if (!account) {
@@ -330,7 +339,7 @@ export async function sendPayment(
         destination,
         asset: Asset.native(),
         amount,
-      })
+      }),
     )
     .setTimeout(180)
     .build();
@@ -340,12 +349,12 @@ export async function sendPayment(
   }
 
   tx.sign(kp);
-  const result = await server.submitTransaction(tx);
-  return { hash: (result as any).hash };
+  const result = (await server.submitTransaction(tx)) as Horizon.TransactionResponse;
+  return { hash: result.hash };
 }
 
 // Re-export the internal predicate parser so claimMaturedLockups can use it.
-function predicateUnlockDateExported(predicate: any): Date | null {
+function predicateUnlockDateExported(predicate: Horizon.Predicate | undefined): Date | null {
   return predicateUnlockDate(predicate);
 }
 
@@ -367,7 +376,7 @@ export interface PiTransaction {
  */
 export async function fetchWalletTransactions(
   publicKey: string,
-  limit = 50
+  limit = 50,
 ): Promise<PiTransaction[]> {
   try {
     // Fetch payment-style ops AND claimable-balance ops in parallel.
@@ -393,10 +402,7 @@ export async function fetchWalletTransactions(
     const merged = new Map<string, any>();
     for (const op of paymentsPage.records as any[]) merged.set(op.id, op);
     for (const op of opsPage.records as any[]) {
-      if (
-        op.type === "create_claimable_balance" ||
-        op.type === "claim_claimable_balance"
-      ) {
+      if (op.type === "create_claimable_balance" || op.type === "claim_claimable_balance") {
         merged.set(op.id, op);
       }
     }
@@ -466,11 +472,7 @@ export async function fetchWalletTransactions(
           asset = op.asset_code || "?";
         }
         direction =
-          from === publicKey && to === publicKey
-            ? "self"
-            : to === publicKey
-              ? "in"
-              : "out";
+          from === publicKey && to === publicKey ? "self" : to === publicKey ? "in" : "out";
         counterparty = direction === "in" ? from : to;
       }
 

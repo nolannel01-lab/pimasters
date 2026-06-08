@@ -18,12 +18,7 @@ import {
   Lock,
   Unlock,
 } from "lucide-react";
-import {
-  fetchWalletTransactions,
-  formatPi,
-  shortKey,
-  type PiTransaction,
-} from "@/lib/pi-network";
+import { fetchWalletTransactions, formatPi, shortKey, type PiTransaction } from "@/lib/pi-network";
 import type { StoredWallet } from "@/lib/wallet-store";
 
 interface Props {
@@ -57,22 +52,13 @@ export function TransactionsDialog({ wallet, open, onOpenChange }: Props) {
         <DialogHeader>
           <DialogTitle className="flex items-center justify-between gap-3">
             <span>Transactions</span>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={load}
-              disabled={loading}
-              className="h-8"
-            >
-              <RefreshCw
-                className={`mr-1 h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`}
-              />
+            <Button size="sm" variant="ghost" onClick={load} disabled={loading} className="h-8">
+              <RefreshCw className={`mr-1 h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
               Refresh
             </Button>
           </DialogTitle>
           <DialogDescription>
-            {wallet.label} · {shortKey(wallet.publicKey)} — successful in/out
-            payments only
+            {wallet.label} · {shortKey(wallet.publicKey)} — successful in/out payments only
           </DialogDescription>
         </DialogHeader>
 
@@ -143,9 +129,7 @@ export function TransactionsDialog({ wallet, open, onOpenChange }: Props) {
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium capitalize">
-                          {label}
-                        </span>
+                        <span className="text-sm font-medium capitalize">{label}</span>
                         {t.type !== "payment" && (
                           <Badge variant="outline" className="text-[10px]">
                             {t.type.replace(/_/g, " ")}
@@ -159,18 +143,14 @@ export function TransactionsDialog({ wallet, open, onOpenChange }: Props) {
                         </div>
                       )}
                       {t.memo && (
-                        <div className="truncate text-xs text-muted-foreground">
-                          memo: {t.memo}
-                        </div>
+                        <div className="truncate text-xs text-muted-foreground">memo: {t.memo}</div>
                       )}
                       <div className="text-[11px] text-muted-foreground/80">
                         {t.createdAt.toLocaleString()}
                       </div>
                     </div>
                     <div className="text-right">
-                      <div
-                        className={`text-sm font-semibold tabular-nums ${tone}`}
-                      >
+                      <div className={`text-sm font-semibold tabular-nums ${tone}`}>
                         {sign}
                         {formatPi(t.amount)} {t.asset === "Pi" ? "π" : t.asset}
                       </div>

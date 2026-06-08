@@ -60,10 +60,9 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   const { wallets, hydrated } = useWallets();
-  const { schedules, addSchedule, updateSchedule, enableSchedule, disableSchedule } = useScheduledPayments();
-  const [balances, setBalances] = useState<Record<string, { avail: number; locked: number }>>(
-    {}
-  );
+  const { schedules, addSchedule, updateSchedule, enableSchedule, disableSchedule } =
+    useScheduledPayments();
+  const [balances, setBalances] = useState<Record<string, { avail: number; locked: number }>>({});
   const [refreshing, setRefreshing] = useState(false);
   const [sweepEvents, setSweepEvents] = useState<SweepEvent[]>([]);
   const [paymentEvents, setPaymentEvents] = useState<PaymentEvent[]>([]);
@@ -72,7 +71,11 @@ function Index() {
   // Wire wallet accessor into the sweeper and start it once wallets hydrate.
   useEffect(() => {
     configureSweep(() => wallets);
-    configurePayments(() => wallets, () => schedules, updateSchedule);
+    configurePayments(
+      () => wallets,
+      () => schedules,
+      updateSchedule,
+    );
   }, [wallets, schedules, updateSchedule]);
 
   useEffect(() => {
@@ -98,12 +101,9 @@ function Index() {
     }
   }, [sweepOn]);
 
-  const handleBalance = useCallback(
-    (publicKey: string, avail: number, locked: number) => {
-      setBalances((prev) => ({ ...prev, [publicKey]: { avail, locked } }));
-    },
-    []
-  );
+  const handleBalance = useCallback((publicKey: string, avail: number, locked: number) => {
+    setBalances((prev) => ({ ...prev, [publicKey]: { avail, locked } }));
+  }, []);
 
   const refreshAll = useCallback(() => {
     setRefreshing(true);
@@ -151,15 +151,8 @@ function Index() {
           </div>
           <div className="flex items-center gap-2">
             {wallets.length > 0 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={refreshAll}
-                disabled={refreshing}
-              >
-                <RefreshCw
-                  className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`}
-                />
+              <Button variant="outline" size="sm" onClick={refreshAll} disabled={refreshing}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${refreshing ? "animate-spin" : ""}`} />
                 Refresh all
               </Button>
             )}
@@ -178,11 +171,7 @@ function Index() {
               Auto-sweep
               <Badge
                 variant={sweepOn ? "default" : "secondary"}
-                className={
-                  sweepOn
-                    ? "bg-success/20 text-success hover:bg-success/30"
-                    : ""
-                }
+                className={sweepOn ? "bg-success/20 text-success hover:bg-success/30" : ""}
               >
                 {sweepOn ? "ON" : "OFF"}
               </Badge>
@@ -192,29 +181,22 @@ function Index() {
             </Button>
           </AlertTitle>
           <AlertDescription className="text-xs">
-            Every 0.001s, each signer wallet checks balance and sends the whole number amount (floor of balance) to{" "}
-            <code className="font-mono">{shortKey(getSweepDestination())}</code>
-            . Runs only while this tab is open.
+            Every 0.001s, each signer wallet checks balance and sends the whole number amount (floor
+            of balance) to <code className="font-mono">{shortKey(getSweepDestination())}</code>.
+            Runs only while this tab is open.
             {sweepEvents.length > 0 && (
               <ul className="mt-3 space-y-1 border-t border-border/40 pt-2">
                 {sweepEvents.slice(0, 5).map((e, i) => (
                   <li key={i} className="flex items-center gap-2">
-                    {e.kind === "claim" && (
-                      <CheckCircle2 className="h-3 w-3 text-warning" />
-                    )}
-                    {e.kind === "send" && (
-                      <Zap className="h-3 w-3 text-success" />
-                    )}
-                    {e.kind === "error" && (
-                      <ShieldAlert className="h-3 w-3 text-destructive" />
-                    )}
+                    {e.kind === "claim" && <CheckCircle2 className="h-3 w-3 text-warning" />}
+                    {e.kind === "send" && <Zap className="h-3 w-3 text-success" />}
+                    {e.kind === "error" && <ShieldAlert className="h-3 w-3 text-destructive" />}
                     <span className="text-muted-foreground">
                       {new Date(e.at).toLocaleTimeString()} ·{" "}
                       <strong className="text-foreground">{e.walletLabel}</strong>{" "}
                       {e.kind === "claim" &&
                         `claimed ${e.count} matured lockup${e.count! > 1 ? "s" : ""}`}
-                      {e.kind === "send" &&
-                        `sent ${formatPi(e.amount || "0")} π → destination`}
+                      {e.kind === "send" && `sent ${formatPi(e.amount || "0")} π → destination`}
                       {e.kind === "error" && `error: ${e.message}`}
                     </span>
                     {e.hash && (
@@ -240,25 +222,19 @@ function Index() {
             <Clock className="h-4 w-4 text-blue-500" />
             <AlertTitle>Scheduled Payments</AlertTitle>
             <AlertDescription className="text-xs">
-              {schedules.filter(s => s.enabled).length} active schedule(s) running.
-              Failed transactions retry every 1ms until successful.
+              {schedules.filter((s) => s.enabled).length} active schedule(s) running. Failed
+              transactions retry every 1ms until successful.
               {paymentEvents.length > 0 && (
                 <ul className="mt-3 space-y-1 border-t border-border/40 pt-2">
                   {paymentEvents.slice(0, 5).map((e, i) => (
                     <li key={i} className="flex items-center gap-2">
-                      {e.kind === "success" && (
-                        <CheckCircle2 className="h-3 w-3 text-success" />
-                      )}
-                      {e.kind === "error" && (
-                        <ShieldAlert className="h-3 w-3 text-destructive" />
-                      )}
-                      {e.kind === "retry" && (
-                        <RefreshCw className="h-3 w-3 text-warning" />
-                      )}
+                      {e.kind === "success" && <CheckCircle2 className="h-3 w-3 text-success" />}
+                      {e.kind === "error" && <ShieldAlert className="h-3 w-3 text-destructive" />}
+                      {e.kind === "retry" && <RefreshCw className="h-3 w-3 text-warning" />}
                       <span className="text-muted-foreground">
                         {new Date(e.at).toLocaleTimeString()} ·{" "}
                         <strong className="text-foreground">
-                          {wallets.find(w => w.id === e.walletId)?.label || "Unknown"}
+                          {wallets.find((w) => w.id === e.walletId)?.label || "Unknown"}
                         </strong>{" "}
                         {e.kind === "success" &&
                           `sent ${formatPi(e.amount)} π → ${shortKey(e.destination)}`}
@@ -289,8 +265,8 @@ function Index() {
             Your Pi, in real time.
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-sm text-muted-foreground sm:text-base">
-            Track multiple wallets, see exactly how much is transactable vs locked, and
-            send Pi on the Mainnet. Your keys never leave your browser.
+            Track multiple wallets, see exactly how much is transactable vs locked, and send Pi on
+            the Mainnet. Your keys never leave your browser.
           </p>
         </section>
 
@@ -299,10 +275,9 @@ function Index() {
           <ShieldAlert className="h-4 w-4" />
           <AlertTitle>Self-custody — read this first</AlertTitle>
           <AlertDescription className="text-xs">
-            Secret keys are kept only in this browser's localStorage and used to sign
-            transactions locally. They are <strong>never sent to any server</strong>. Anyone
-            with access to this device can spend your Pi. For maximum safety, use watch-only
-            mode (public key only).
+            Secret keys are kept only in this browser's localStorage and used to sign transactions
+            locally. They are <strong>never sent to any server</strong>. Anyone with access to this
+            device can spend your Pi. For maximum safety, use watch-only mode (public key only).
           </AlertDescription>
         </Alert>
 
@@ -343,11 +318,10 @@ function Index() {
 
         <footer className="mt-16 border-t border-border/40 pt-6 text-center text-xs text-muted-foreground">
           <p>
-            Connected to <span className="font-mono">api.mainnet.minepi.com</span> · Auto-refreshes every 30s
+            Connected to <span className="font-mono">api.mainnet.minepi.com</span> · Auto-refreshes
+            every 30s
           </p>
-          <p className="mt-1">
-            Open-source, non-custodial. Not affiliated with the Pi Core Team.
-          </p>
+          <p className="mt-1">Open-source, non-custodial. Not affiliated with the Pi Core Team.</p>
         </footer>
       </main>
 
@@ -368,11 +342,7 @@ function SummaryCard({
   tone: "primary" | "success" | "warning";
 }) {
   const toneClass =
-    tone === "primary"
-      ? "text-primary"
-      : tone === "success"
-        ? "text-success"
-        : "text-warning";
+    tone === "primary" ? "text-primary" : tone === "success" ? "text-success" : "text-warning";
   return (
     <div className="rounded-xl border border-border/60 bg-card/60 p-5 shadow-[var(--shadow-elegant)] backdrop-blur">
       <div className={`flex items-center gap-2 text-xs uppercase tracking-wide ${toneClass}`}>
@@ -394,8 +364,8 @@ function EmptyState() {
       </div>
       <h3 className="mt-4 text-lg font-semibold">No wallets yet</h3>
       <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-        Add your first Pi wallet to see balances and lockup schedules. Start with watch-only
-        for safety — you only need the public key (G…).
+        Add your first Pi wallet to see balances and lockup schedules. Start with watch-only for
+        safety — you only need the public key (G…).
       </p>
       <div className="mt-5 inline-block">
         <AddWalletDialog />
