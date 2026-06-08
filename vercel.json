@@ -1,0 +1,5 @@
+{
+  "buildCommand": "npm run build",
+  "framework": "tanstack-start",
+  "outputDirectory": "dist"
+}

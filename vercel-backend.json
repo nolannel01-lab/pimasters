@@ -1,0 +1,12 @@
+{
+  "buildCommand": "cd server && bun run build",
+  "devCommand": "cd server && bun run dev",
+  "installCommand": "bun install && cd server && bun install",
+  "framework": "other",
+  "outputDirectory": "server/dist",
+  "env": [
+    "SUPABASE_URL",
+    "SUPABASE_KEY",
+    "WHATSAPP_BOT_ENABLED"
+  ]
+}
