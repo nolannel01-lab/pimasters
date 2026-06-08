@@ -43,3 +43,6 @@ auth_info_baileys/
 
 .vercel
 .env*.local
+
+.vercel
+.env*.local
