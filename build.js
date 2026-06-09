@@ -51,10 +51,36 @@ const indexHtml = `<!DOCTYPE html>
     <style>
         body { margin: 0; padding: 0; }
         #root { display: flex; min-height: 100vh; }
+        .loading {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 100vh;
+          background: #000;
+        }
+        .loading-spinner {
+          width: 40px;
+          height: 40px;
+          border: 4px solid rgba(255,255,255,0.1);
+          border-top: 4px solid #fff;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
     </style>
+    <script>
+      window.__DEHYDRATED_STATE__ = {};
+      window.__SSR__ = false;
+    <\/script>
 </head>
 <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="loading">
+        <div class="loading-spinner"><\/div>
+      <\/div>
+    <\/div>
     <script type="module" src="/assets/${mainBundle}"><\/script>
 </body>
 </html>`;

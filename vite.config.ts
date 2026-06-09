@@ -7,10 +7,12 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
-  build: {
-    // Only build client, no SSR
-    rollupOptions: {
-      input: 'src/entry-client.tsx',
-    },
+  // Disable SSR entirely - client-only SPA
+  ssr: {
+    external: [],
+    noExternal: true,
+  },
+  tanstackStart: {
+    ssr: false,
   },
 });
