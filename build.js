@@ -27,7 +27,26 @@ const mainBundle = jsFiles.sort((a, b) => {
   return sizeB - sizeA;
 })[0];
 
-const cssFile = cssFiles[0] || 'styles.css';
+// Delete all other index bundles to prevent Vercel from serving the wrong one
+jsFiles.forEach(file => {
+  if (file !== mainBundle) {
+    const filePath = path.join(assetsDir, file);
+    fs.unlinkSync(filePath);
+    console.log(`🗑️  Deleted old bundle: ${file}`);
+  }
+});
+
+// Also delete old CSS files except the one we're using
+const cssToKeep = cssFiles.find(f => f.startsWith('styles-'));
+cssFiles.forEach(file => {
+  if (file !== cssToKeep) {
+    const filePath = path.join(assetsDir, file);
+    fs.unlinkSync(filePath);
+    console.log(`🗑️  Deleted old CSS: ${file}`);
+  }
+});
+
+const cssFile = cssToKeep || 'styles.css';
 
 console.log(`✅ Main bundle: ${mainBundle} (${(fs.statSync(path.join(assetsDir, mainBundle)).size / 1024 / 1024).toFixed(2)}MB)`);
 console.log(`✅ CSS file: ${cssFile}`);
@@ -87,5 +106,13 @@ const indexHtml = `<!DOCTYPE html>
 
 fs.writeFileSync(indexPath, indexHtml);
 console.log(`✅ Generated index.html at ${indexPath}`);
+
+// Remove .assetsignore file as it can confuse deployment
+const assetsIgnorePath = path.join(assetsDir, '.assetsignore');
+if (fs.existsSync(assetsIgnorePath)) {
+  fs.unlinkSync(assetsIgnorePath);
+  console.log('🗑️  Removed .assetsignore file');
+}
+
 console.log('🎉 Build complete! Ready for deployment.');
 process.exit(0);
