@@ -1,4 +1,5 @@
 import { Outlet, Link, createRootRoute, HeadContent } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 
 import appCss from "../styles.css?url";
 
@@ -69,7 +70,6 @@ export const Route = createRootRoute({
       },
     ],
   }),
-  ssr: false,
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
@@ -89,5 +89,13 @@ function RootShell({ children }: { children: React.ReactNode }) {
 }
 
 function RootComponent() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) return null;
+
   return <Outlet />;
 }
