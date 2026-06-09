@@ -38,16 +38,39 @@ const indexHtml = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>PiVault — Multi-wallet Pi balance & transactions</title>
     <meta name="author" content="PiVault">
     <meta property="og:type" content="website">
     <meta name="twitter:card" content="summary">
     <meta name="theme-color" content="#000000">
     <link rel="stylesheet" href="/assets/${cssFile}">
+    <style>
+        body { margin: 0; padding: 0; }
+        #root { display: flex; min-height: 100vh; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+    <script type="module" src="/assets/${mainBundle}"><\/script>
+    <script>
+        // Fallback message if JavaScript fails to load
+        window.addEventListener('load', function() {
+            if (!document.getElementById('root').firstChild) {
+                console.error('Failed to load application');
+            }
+        }, { once: true });
+    <\/script>
+</body>
+</html>`;
+
+fs.writeFileSync(indexPath, indexHtml);
+console.log(`✅ Generated index.html at ${indexPath}`);
+console.log('🎉 Build complete! Ready for deployment.');
+
 </head>
 <body>
     <div id="root"></div>
