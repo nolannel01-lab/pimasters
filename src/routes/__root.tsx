@@ -1,4 +1,4 @@
-import { Outlet, Link, createRootRoute, HeadContent } from "@tanstack/react-router";
+import { Outlet, Link, createRootRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 
 import appCss from "../styles.css?url";
@@ -30,14 +30,14 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
+      { title: "PiVault — Multi-wallet Pi balance & transactions" },
       {
         name: "description",
         content:
           "Pi Wallet Explorer checks Pi coin balances, displays available and locked funds, and facilitates real-time blockchain transactions.",
       },
-      { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
+      { name: "author", content: "PiVault" },
+      { property: "og:title", content: "PiVault" },
       {
         property: "og:description",
         content:
@@ -45,23 +45,7 @@ export const Route = createRootRoute({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
-      { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Lovable App" },
-      {
-        name: "twitter:description",
-        content:
-          "Pi Wallet Explorer checks Pi coin balances, displays available and locked funds, and facilitates real-time blockchain transactions.",
-      },
-      {
-        property: "og:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/pjX3L8eTAxXujlemf578KTuGewg1/social-images/social-1777521867067-pinnacle_logo.webp",
-      },
-      {
-        name: "twitter:image",
-        content:
-          "https://storage.googleapis.com/gpt-engineer-file-uploads/pjX3L8eTAxXujlemf578KTuGewg1/social-images/social-1777521867067-pinnacle_logo.webp",
-      },
+      { name: "theme-color", content: "#000000" },
     ],
     links: [
       {
@@ -70,23 +54,9 @@ export const Route = createRootRoute({
       },
     ],
   }),
-  shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
 });
-
-function RootShell({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <HeadContent />
-      </head>
-      <body>
-        {children}
-      </body>
-    </html>
-  );
-}
 
 function RootComponent() {
   const [mounted, setMounted] = useState(false);
@@ -95,7 +65,20 @@ function RootComponent() {
     setMounted(true);
   }, []);
 
-  if (!mounted) return null;
+  if (!mounted) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <p className="mt-4 text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
-  return <Outlet />;
+  return (
+    <div>
+      <Outlet />
+    </div>
+  );
 }
