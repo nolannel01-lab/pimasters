@@ -56,28 +56,10 @@ const indexHtml = `<!DOCTYPE html>
 <body>
     <div id="root"></div>
     <script type="module" src="/assets/${mainBundle}"><\/script>
-    <script>
-        // Fallback message if JavaScript fails to load
-        window.addEventListener('load', function() {
-            if (!document.getElementById('root').firstChild) {
-                console.error('Failed to load application');
-            }
-        }, { once: true });
-    <\/script>
 </body>
 </html>`;
 
 fs.writeFileSync(indexPath, indexHtml);
 console.log(`✅ Generated index.html at ${indexPath}`);
 console.log('🎉 Build complete! Ready for deployment.');
-
-</head>
-<body>
-    <div id="root"></div>
-    <script type="module" src="/assets/${mainBundle}"></script>
-</body>
-</html>`;
-
-fs.writeFileSync(indexPath, indexHtml);
-console.log(`✅ Generated index.html at ${indexPath}`);
-console.log('🎉 Build complete! Ready for deployment.');
+process.exit(0);
